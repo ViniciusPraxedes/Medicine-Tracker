@@ -1,6 +1,7 @@
 import React from 'react';
 import Login from './Login';
 
+
 const Layout = ({ children }) => {
     return (
         <div className="min-h-screen bg-background font-sans antialiased">
