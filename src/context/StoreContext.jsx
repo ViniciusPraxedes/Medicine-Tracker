@@ -10,6 +10,7 @@ export const useStore = () => useContext(StoreContext);
 export const StoreProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [selectedDate, setSelectedDate] = useState(new Date());
 
     // Initial State (Local)
     // Initial State (Local)
@@ -208,7 +209,13 @@ export const StoreProvider = ({ children }) => {
             deleteMedication,
             refillMedication,
             takeDose,
-            undoDose
+            undoDose,
+            selectedDate,
+            changeWeek: (offset) => {
+                const newDate = new Date(selectedDate);
+                newDate.setDate(newDate.getDate() + (offset * 7));
+                setSelectedDate(newDate);
+            }
         }}>
             {children}
         </StoreContext.Provider>

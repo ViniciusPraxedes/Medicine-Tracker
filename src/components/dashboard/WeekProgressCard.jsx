@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { useStore } from '@/context/StoreContext';
 
 const WeekProgressCard = () => {
-    const { logs, medications } = useStore();
+    const { logs, medications, selectedDate, changeWeek } = useStore();
 
     // Calculate Week Number (ISO 8601)
     const getWeekNumber = (d) => {
@@ -15,15 +15,26 @@ const WeekProgressCard = () => {
         const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
         return weekNo;
     };
-    const currentWeek = getWeekNumber(new Date());
+    const currentWeek = getWeekNumber(selectedDate);
 
-    // Calculate data for the last 7 days
-    const today = new Date();
+    // Get start of week (Monday) and end of week (Sunday)
+    const getWeekRange = (date) => {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+        const start = new Date(d.setDate(diff));
+        const end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        return { start, end };
+    };
+
+    const { start: weekStart, end: weekEnd } = getWeekRange(selectedDate);
+
+    // Calculate data for the selected week (Mon-Sun)
     const data = [];
-
-    for (let i = 6; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(today.getDate() - i);
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(weekStart);
+        d.setDate(weekStart.getDate() + i);
         const dateStr = d.toISOString().split('T')[0];
         const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
 
@@ -50,13 +61,22 @@ const WeekProgressCard = () => {
         });
     }
 
+    const formatDate = (date) => {
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    };
+
     return (
         <Card className="col-span-1 md:col-span-2 lg:col-span-2 h-[350px] flex flex-col">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
                 <CardTitle className="text-xl font-bold flex items-center gap-2">
                     <BarChart2 className="h-5 w-5 text-primary" />
                     Weekly Adherence (Week {currentWeek})
                 </CardTitle>
+                <div className="flex items-center gap-2">
+                    <button onClick={() => changeWeek(-1)} className="p-1 hover:bg-muted rounded text-lg font-bold">&lt;</button>
+                    <span className="text-sm font-medium">{formatDate(weekStart)} - {formatDate(weekEnd)}</span>
+                    <button onClick={() => changeWeek(1)} className="p-1 hover:bg-muted rounded text-lg font-bold">&gt;</button>
+                </div>
             </CardHeader>
             <CardContent className="flex-1 min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
