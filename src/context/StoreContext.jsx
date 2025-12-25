@@ -144,6 +144,42 @@ export const StoreProvider = ({ children }) => {
         }
     };
 
+    const takeDoseForDate = async (medId, dateString, scheduledTime) => {
+        const med = medications.find(m => m.id === medId);
+        if (!med) return;
+
+        // Create timestamp for the specific date and time
+        // dateString format: YYYY-MM-DD
+        // scheduledTime format: HH:MM
+        const timestamp = `${dateString}T${scheduledTime}:00.000Z`;
+
+        const newLog = {
+            id: crypto.randomUUID(),
+            medicationId: medId,
+            action: 'take',
+            timestamp: timestamp,
+            retroactive: true // Mark as retroactive for tracking purposes
+        };
+
+        if (user) {
+            try {
+                await setDoc(doc(db, 'users', user.uid, 'medications', medId), { currentPills: Math.max(0, med.currentPills - 1) }, { merge: true });
+                await setDoc(doc(db, 'users', user.uid, 'logs', newLog.id), newLog);
+            } catch (error) {
+                console.error("Error taking retroactive dose:", error);
+                alert("Failed to record retroactive dose.");
+            }
+        } else {
+            setMedications(prev => prev.map(m => {
+                if (m.id === medId) {
+                    return { ...m, currentPills: Math.max(0, m.currentPills - 1) };
+                }
+                return m;
+            }));
+            setLogs(prev => [...prev, newLog]);
+        }
+    };
+
     const undoDose = async (logId) => {
         const log = logs.find(l => l.id === logId);
         if (!log) return;
@@ -209,6 +245,7 @@ export const StoreProvider = ({ children }) => {
             deleteMedication,
             refillMedication,
             takeDose,
+            takeDoseForDate,
             undoDose,
             selectedDate,
             changeWeek: (offset) => {
