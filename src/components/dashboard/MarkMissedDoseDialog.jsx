@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Check, Calendar } from 'lucide-react';
+import { Check, Calendar, RotateCcw } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/Dialog';
 import { Button } from '@/components/ui/Button';
 import { useStore } from '@/context/StoreContext';
 import { cn } from '@/lib/utils';
 
 const MarkMissedDoseDialog = ({ open, onOpenChange, selectedDate }) => {
-    const { medications, logs, takeDoseForDate } = useStore();
+    const { medications, logs, takeDoseForDate, undoDose } = useStore();
     const [processing, setProcessing] = useState(false);
 
     if (!selectedDate) return null;
@@ -70,6 +70,18 @@ const MarkMissedDoseDialog = ({ open, onOpenChange, selectedDate }) => {
         }
     };
 
+    const handleUndoDose = async (dose) => {
+        if (!dose.logId) return;
+        setProcessing(true);
+        try {
+            await undoDose(dose.logId);
+        } catch (error) {
+            console.error('Error undoing dose:', error);
+        } finally {
+            setProcessing(false);
+        }
+    };
+
     const missedDoses = doses.filter(d => !d.taken);
 
     return (
@@ -91,28 +103,27 @@ const MarkMissedDoseDialog = ({ open, onOpenChange, selectedDate }) => {
                         <div className="text-center py-8 text-muted-foreground">
                             No medications scheduled for this day.
                         </div>
-                    ) : missedDoses.length === 0 ? (
-                        <div className="text-center py-8">
-                            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-3">
-                                <Check className="h-6 w-6 text-primary" />
-                            </div>
-                            <p className="font-medium">All doses taken!</p>
-                            <p className="text-sm text-muted-foreground mt-1">
-                                You've completed all scheduled medications for this day.
-                            </p>
-                        </div>
                     ) : (
                         <>
-                            <p className="text-sm text-muted-foreground mb-2">
-                                Mark missed doses as taken:
-                            </p>
+                            {missedDoses.length === 0 ? (
+                                <div className="text-center py-4 bg-primary/5 rounded-lg border border-primary/20 mb-4">
+                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 mb-2">
+                                        <Check className="h-4 w-4 text-primary" />
+                                    </div>
+                                    <p className="font-medium text-sm text-primary">All scheduled doses taken!</p>
+                                </div>
+                            ) : (
+                                <p className="text-sm text-muted-foreground mb-2">
+                                    Mark missed doses as taken:
+                                </p>
+                            )}
                             {doses.map((dose) => (
                                 <div
                                     key={dose.id}
                                     className={cn(
                                         "flex items-center justify-between p-3 rounded-lg border transition-all",
                                         dose.taken
-                                            ? "bg-primary/10 border-primary/20 opacity-60"
+                                            ? "bg-primary/10 border-primary/20"
                                             : "bg-card hover:bg-accent/5"
                                     )}
                                 >
@@ -135,22 +146,28 @@ const MarkMissedDoseDialog = ({ open, onOpenChange, selectedDate }) => {
                                         </div>
                                     </div>
 
-                                    {dose.taken ? (
-                                        <div className="flex items-center gap-1 text-primary text-sm font-medium">
-                                            <Check className="h-4 w-4" />
-                                            Taken
-                                        </div>
-                                    ) : (
-                                        <Button
-                                            size="sm"
-                                            onClick={() => handleMarkAsTaken(dose)}
-                                            disabled={processing}
-                                            className="gap-1"
-                                        >
-                                            <Check className="h-3 w-3" />
-                                            Mark Taken
-                                        </Button>
-                                    )}
+                                    <Button
+                                        size="sm"
+                                        variant={dose.taken ? "outline" : "default"}
+                                        onClick={() => dose.taken ? handleUndoDose(dose) : handleMarkAsTaken(dose)}
+                                        disabled={processing}
+                                        className={cn(
+                                            "gap-1 min-w-[100px]",
+                                            dose.taken && "text-muted-foreground hover:text-primary"
+                                        )}
+                                    >
+                                        {dose.taken ? (
+                                            <>
+                                                <RotateCcw className="h-3 w-3" />
+                                                Taken
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Check className="h-3 w-3" />
+                                                Mark Taken
+                                            </>
+                                        )}
+                                    </Button>
                                 </div>
                             ))}
                         </>
