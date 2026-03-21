@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { auth, db, signInWithGoogle, logout } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, onSnapshot, doc, setDoc, deleteDoc, query, orderBy, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, deleteDoc, query, orderBy, getDoc, increment } from 'firebase/firestore';
 
 const StoreContext = createContext();
 
@@ -63,12 +63,14 @@ export const StoreProvider = ({ children }) => {
         if (user) {
             try {
                 await setDoc(doc(db, 'users', user.uid, 'medications', newMed.id), newMed);
+                await logAction(newMed.id, 'add');
             } catch (error) {
                 console.error("Error adding medication:", error);
                 alert("Failed to save medication. Please check your connection or permissions.");
             }
         } else {
             setMedications(prev => [...prev, newMed]);
+            logAction(newMed.id, 'add');
         }
     };
 
@@ -127,7 +129,10 @@ export const StoreProvider = ({ children }) => {
 
         if (user) {
             try {
-                await setDoc(doc(db, 'users', user.uid, 'medications', medId), { currentPills: Math.max(0, med.currentPills - 1) }, { merge: true });
+                // Use increment to prevent race conditions
+                await setDoc(doc(db, 'users', user.uid, 'medications', medId), { 
+                    currentPills: increment(-1) 
+                }, { merge: true });
                 await logAction(medId, 'take');
             } catch (error) {
                 console.error("Error taking dose:", error);
@@ -163,7 +168,10 @@ export const StoreProvider = ({ children }) => {
 
         if (user) {
             try {
-                await setDoc(doc(db, 'users', user.uid, 'medications', medId), { currentPills: Math.max(0, med.currentPills - 1) }, { merge: true });
+                // Use increment to prevent race conditions during rapid state updates
+                await setDoc(doc(db, 'users', user.uid, 'medications', medId), { 
+                    currentPills: increment(-1) 
+                }, { merge: true });
                 await setDoc(doc(db, 'users', user.uid, 'logs', newLog.id), newLog);
             } catch (error) {
                 console.error("Error taking retroactive dose:", error);
@@ -191,7 +199,9 @@ export const StoreProvider = ({ children }) => {
                 if (log.action === 'take') {
                     const med = medications.find(m => m.id === log.medicationId);
                     if (med) {
-                        await setDoc(doc(db, 'users', user.uid, 'medications', med.id), { currentPills: med.currentPills + 1 }, { merge: true });
+                        await setDoc(doc(db, 'users', user.uid, 'medications', med.id), { 
+                            currentPills: increment(1) 
+                        }, { merge: true });
                     }
                 }
             } catch (error) {
