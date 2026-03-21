@@ -1,19 +1,24 @@
-import React from 'react';
-import { History, Package, PlusCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { History, Package, PlusCircle, ChevronDown } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { useStore } from '@/context/StoreContext';
 
 const PackHistoryCard = () => {
     const { logs, medications } = useStore();
+    const [visibleCount, setVisibleCount] = useState(5);
 
     // Filter refill and add logs
-    const historyLogs = logs
+    const allHistoryLogs = logs
         .filter(l => l.action === 'refill' || l.action === 'add')
-        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-        .slice(0, 5); // Show last 5
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+    const historyLogs = allHistoryLogs.slice(0, visibleCount);
 
-    const getMedName = (id) => {
-        const med = medications.find(m => m.id === id);
+    const getMedName = (log) => {
+        if (log.medicationName) return log.medicationName;
+        // Fallback for older logs
+        const med = medications.find(m => m.id === log.medicationId);
         return med ? med.name : 'Unknown Medication';
     };
 
@@ -43,7 +48,7 @@ const PackHistoryCard = () => {
                                     )}
                                 </div>
                                 <div>
-                                    <p className="font-medium text-sm">{getMedName(log.medicationId)}</p>
+                                    <p className="font-medium text-sm">{getMedName(log)}</p>
                                     <p className="text-xs text-muted-foreground">
                                         {log.action === 'add' ? 'Added on ' : 'Refilled on '}
                                         {new Date(log.timestamp).toLocaleDateString()} at {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -51,6 +56,17 @@ const PackHistoryCard = () => {
                                 </div>
                             </div>
                         ))}
+                        
+                        {allHistoryLogs.length > visibleCount && (
+                            <Button 
+                                variant="ghost" 
+                                className="w-full mt-2 text-muted-foreground"
+                                onClick={() => setVisibleCount(prev => prev + 5)}
+                            >
+                                <ChevronDown className="h-4 w-4 mr-2" />
+                                See more
+                            </Button>
+                        )}
                     </div>
                 )}
             </CardContent>

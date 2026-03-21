@@ -63,14 +63,14 @@ export const StoreProvider = ({ children }) => {
         if (user) {
             try {
                 await setDoc(doc(db, 'users', user.uid, 'medications', newMed.id), newMed);
-                await logAction(newMed.id, 'add');
+                await logAction(newMed.id, 'add', newMed.name);
             } catch (error) {
                 console.error("Error adding medication:", error);
                 alert("Failed to save medication. Please check your connection or permissions.");
             }
         } else {
             setMedications(prev => [...prev, newMed]);
-            logAction(newMed.id, 'add');
+            logAction(newMed.id, 'add', newMed.name);
         }
     };
 
@@ -161,6 +161,7 @@ export const StoreProvider = ({ children }) => {
         const newLog = {
             id: crypto.randomUUID(),
             medicationId: medId,
+            medicationName: med.name,
             action: 'take',
             timestamp: timestamp,
             retroactive: true // Mark as retroactive for tracking purposes
@@ -222,10 +223,12 @@ export const StoreProvider = ({ children }) => {
         }
     };
 
-    const logAction = async (medicationId, action) => {
+    const logAction = async (medicationId, action, fallbackName = null) => {
+        const med = medications.find(m => m.id === medicationId);
         const newLog = {
             id: crypto.randomUUID(),
             medicationId,
+            medicationName: med ? med.name : (fallbackName || 'Unknown Medication'),
             action,
             timestamp: new Date().toISOString()
         };
