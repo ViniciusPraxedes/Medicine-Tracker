@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StoreProvider } from './context/StoreContext';
 import Layout from './components/Layout';
 import Dashboard from './components/dashboard/Dashboard';
@@ -13,9 +13,24 @@ function App() {
 
 import { useStore } from './context/StoreContext';
 import Login from './components/Login';
+import { listenForMessages } from './lib/firebase';
 
 const AuthWrapper = () => {
   const { user, loading } = useStore();
+
+  useEffect(() => {
+    if (user) {
+      const unsubscribe = listenForMessages((payload) => {
+        console.log('Message received in foreground: ', payload);
+        alert(`🔔 Reminder: ${payload?.notification?.title || 'New Notification'}\n${payload?.notification?.body || ''}`);
+      });
+      // listenForMessages does not return an unsubscribe function in the v9 modular SDK usually
+      // but if it does, it's safe to return it.
+      return () => {
+        if (typeof unsubscribe === 'function') unsubscribe();
+      };
+    }
+  }, [user]);
 
   if (loading) {
     return (
