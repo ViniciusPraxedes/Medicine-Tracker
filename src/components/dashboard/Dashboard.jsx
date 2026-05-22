@@ -39,7 +39,8 @@ const Dashboard = () => {
                         className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50"
                     >
                         <Bell className="w-5 h-5" />
-                        {isRequesting ? 'Enabling...' : 'Enable Reminders'}
+                        {/* Show loading text while requesting permission, otherwise show default label */}
+                        {isRequesting ? 'Enabling...' : 'Enable notifications'}
                     </button>
                 )}
             </div>
