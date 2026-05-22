@@ -26,7 +26,7 @@ exports.sendMedicationReminders = onSchedule("* * * * *", async () => {
         if (usersSnapshot.empty) {
             // Stop executing the function since there are no users
             return;
-        // End of empty check conditional
+            // End of empty check conditional
         }
         // Create an array to store all promise operations for parallel execution
         const tasks = [];
@@ -38,7 +38,7 @@ exports.sendMedicationReminders = onSchedule("* * * * *", async () => {
             if (!userData.fcmToken) {
                 // Skip this user and continue to the next one
                 return;
-            // End of token check conditional
+                // End of token check conditional
             }
             // Add a task promise for processing this user to our tasks array
             tasks.push((async () => {
@@ -52,7 +52,7 @@ exports.sendMedicationReminders = onSchedule("* * * * *", async () => {
                 if (medsSnapshot.empty) {
                     // Stop processing this user
                     return;
-                // End of medications check conditional
+                    // End of medications check conditional
                 }
                 // Iterate through each medication document
                 medsSnapshot.forEach((medDoc) => {
@@ -80,7 +80,7 @@ exports.sendMedicationReminders = onSchedule("* * * * *", async () => {
                                     const diff = currMin - schedMin;
                                     // Check if scheduled time is due within the 1 minute window
                                     return diff >= 0 && diff < 1;
-                                // End of find check
+                                    // End of find check
                                 });
                                 // If a due time has been found, send a push notification
                                 if (dueTime) {
@@ -91,12 +91,12 @@ exports.sendMedicationReminders = onSchedule("* * * * *", async () => {
                                         // Specify notification content details
                                         notification: {
                                             // Title of the push notification alert
-                                            title: `Reminder: ${med.name}`,
+                                            title: `Reminder`,
                                             // Body text of the push notification reminder
-                                            body: `It's time to take your dose of ${med.dosage}.`
-                                        // End of notification details object
+                                            body: `${med.dosage}.`
+                                            // End of notification details object
                                         }
-                                    // End of message object structure
+                                        // End of message object structure
                                     };
                                     // Send the FCM notification and catch failures
                                     messaging.send(message)
@@ -104,27 +104,27 @@ exports.sendMedicationReminders = onSchedule("* * * * *", async () => {
                                         .then((response) => console.log("Sent notification:", response))
                                         // Log failed message sends
                                         .catch((err) => console.error("Error sending notification:", err));
-                                // End of dueTime check conditional
+                                    // End of dueTime check conditional
                                 }
-                            // End of day schedule match check
+                                // End of day schedule match check
                             }
-                        // End of schedule validation check
+                            // End of schedule validation check
                         }
-                    // End of remindersEnabled check conditional
+                        // End of remindersEnabled check conditional
                     }
-                // End of medications loop
+                    // End of medications loop
                 });
-            // End of user processing async function
+                // End of user processing async function
             })());
-        // End of user docs loop
+            // End of user docs loop
         });
         // Wait for all user reminder tasks to finish processing
         await Promise.all(tasks);
-    // Catch any errors that occur during the batch execution process
+        // Catch any errors that occur during the batch execution process
     } catch (err) {
         // Output database query or processing error to the function logs
         console.error("Error processing reminders:", err);
-    // End of try-catch block
+        // End of try-catch block
     }
-// End of scheduled cloud function definition
+    // End of scheduled cloud function definition
 });
