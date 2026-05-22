@@ -16,18 +16,10 @@ const Login = () => {
 
     // Check if the user is authenticated in the system
     if (user) {
-        // Render user details container and sign out controls
-        // Flex container to layout user info and sign out button
+        // Render only the sign out button when user is authenticated
         return (
-            <div className="flex items-center gap-4">
-                {/* Container for user email and name, hidden on small screens */}
-                <div className="text-sm text-right hidden sm:block">
-                    {/* Display name of the currently logged in user */}
-                    <p className="font-medium">{user.displayName}</p>
-                    {/* Email address of the currently logged in user */}
-                    <p className="text-xs text-muted-foreground">{user.email}</p>
-                {/* Close user profile information wrapper */}
-                </div>
+            // Wrapper for the sign out button
+            <div className="flex items-center">
                 {/* Button to trigger logout procedure from store provider */}
                 <Button variant="outline" size="sm" onClick={logout} className="gap-2">
                     {/* Log out icon visual indicator */}
@@ -36,7 +28,7 @@ const Login = () => {
                     Sign Out
                 {/* Close sign out button */}
                 </Button>
-            {/* Close layout container */}
+            {/* Close wrapper */}
             </div>
         );
     // Close conditional authenticated block
