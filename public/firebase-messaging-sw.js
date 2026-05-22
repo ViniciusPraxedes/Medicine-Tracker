@@ -16,3 +16,18 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 const messaging = firebase.messaging();
+
+// Add an event listener for the install phase of the service worker
+self.addEventListener("install", () => {
+    // Force the waiting service worker to become the active service worker immediately
+    self.skipWaiting();
+// End of install event listener
+});
+
+// Add an event listener for the activate phase of the service worker
+self.addEventListener("activate", (event) => {
+    // Claim control of all open clients immediately upon activation
+    event.waitUntil(self.clients.claim());
+// End of activate event listener
+});
+
