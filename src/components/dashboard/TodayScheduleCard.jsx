@@ -33,12 +33,6 @@ const TodayScheduleCard = () => {
             // For this MVP, let's assume if you have 2 doses, you need 2 logs.
             // We'll sort logs by time and match them to scheduled times.
 
-            const medLogsToday = logs.filter(l =>
-                l.medicationId === med.id &&
-                l.action === 'take' &&
-                l.timestamp.startsWith(dateStr)
-            ).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
             // This is tricky without specific dose tracking. 
             // Let's try a simpler UI approach: List all scheduled times. 
             // If there are N scheduled times, and M logs, we mark the first M as taken? 

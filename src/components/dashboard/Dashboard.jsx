@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+// Import React and the useState hook
+import React, { useState } from 'react';
 import MyMedicationsCard from './MyMedicationsCard';
 import TodayScheduleCard from './TodayScheduleCard';
 import WeekProgressCard from './WeekProgressCard';

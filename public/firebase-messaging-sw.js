@@ -1,3 +1,5 @@
+// Declare global variables for the service worker context
+/* global importScripts, firebase */
 importScripts("https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/10.9.0/firebase-messaging-compat.js");
 

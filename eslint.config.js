@@ -26,4 +26,20 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  // Node files config block for scheduled functions and build files
+  {
+    // Apply this configuration to all js files in functions and vite config
+    files: ['functions/**/*.js', 'vite.config.js'],
+    // Define the language options override
+    languageOptions: {
+      // Define global variables mapping
+      globals: {
+        // Merge the standard Node.js global variables
+        ...globals.node,
+      // End of globals configuration mapping
+      },
+    // End of languageOptions configuration
+    },
+  // End of Node files configuration block object
+  },
 ])
