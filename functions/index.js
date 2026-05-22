@@ -14,8 +14,8 @@ const db = getFirestore();
 // Create a Firebase Cloud Messaging client instance
 const messaging = getMessaging();
 
-// Define and export a scheduled function that runs every 5 minutes
-exports.sendMedicationReminders = onSchedule("*/5 * * * *", async () => {
+// Define and export a scheduled function that runs every 1 minute
+exports.sendMedicationReminders = onSchedule("* * * * *", async () => {
     // Get the current date and time representing the execution timestamp
     const now = new Date();
     // Begin try block to handle potential Firestore or FCM operations exceptions
@@ -78,8 +78,8 @@ exports.sendMedicationReminders = onSchedule("*/5 * * * *", async () => {
                                     const currMin = currHour * 60 + currMinute;
                                     // Calculate difference in minutes between current time and scheduled time
                                     const diff = currMin - schedMin;
-                                    // Check if scheduled time is due within the 5 minute window
-                                    return diff >= 0 && diff < 5;
+                                    // Check if scheduled time is due within the 1 minute window
+                                    return diff >= 0 && diff < 1;
                                 // End of find check
                                 });
                                 // If a due time has been found, send a push notification
