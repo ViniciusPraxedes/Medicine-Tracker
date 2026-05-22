@@ -91,7 +91,7 @@ exports.sendMedicationReminders = onSchedule("* * * * *", async () => {
                                         // Specify notification content details
                                         notification: {
                                             // Title of the push notification alert
-                                            title: "Medicine Tracker"
+                                            title: "Reminder"
                                             // End of notification details object
                                         }
                                         // End of message object structure
