@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Plus, Pill, Edit2, Trash2, RefreshCw } from 'lucide-react';
+// Import Lucide icons for UI representation including notification toggle symbols
+import { Plus, Pill, Edit2, Trash2, RefreshCw, Bell, BellOff } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useStore } from '@/context/StoreContext';
@@ -55,8 +56,25 @@ const MyMedicationsCard = () => {
                                     <p className="text-sm text-muted-foreground">
                                         {med.dosage} • {med.currentPills}/{med.totalPills} pills left
                                     </p>
-                                    <p className="text-xs text-muted-foreground">
-                                        Schedule: {med.schedule.times.join(', ')} ({med.schedule.days.length === 7 ? 'Daily' : med.schedule.days.join(', ')})
+                                    {/* Text display containing medication schedule times and frequencies */}
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                                        {/* Label and schedule values */}
+                                        <span>Schedule: {med.schedule.times.join(', ')} ({med.schedule.days.length === 7 ? 'Daily' : med.schedule.days.join(', ')})</span>
+                                        {/* Render active or muted bell indicator based on remindersEnabled setting */}
+                                        {med.remindersEnabled !== false ? (
+                                            // Active reminder badge
+                                            <span className="flex items-center text-primary gap-0.5 text-[10px] font-medium bg-primary/10 px-1.5 py-0.5 rounded" title="Reminders active">
+                                                {/* Active Bell icon */}
+                                                <Bell className="h-2.5 w-2.5" /> Active
+                                            </span>
+                                        ) : (
+                                            // Muted reminder badge
+                                            <span className="flex items-center text-muted-foreground gap-0.5 text-[10px] font-medium bg-accent/30 px-1.5 py-0.5 rounded" title="Reminders muted">
+                                                {/* Muted BellOff icon */}
+                                                <BellOff className="h-2.5 w-2.5" /> Muted
+                                            </span>
+                                        )}
+                                    {/* End of schedule info block */}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2">

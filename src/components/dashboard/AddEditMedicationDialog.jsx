@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+// Import React and the useState hook
+import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -25,17 +26,54 @@ const AddEditMedicationDialog = ({ isOpen, onClose, medicationToEdit }) => {
         totalPills: '',
         frequency: 'daily',
         relationToFood: 'with_food',
+        // Enable medication push reminders by default
+        remindersEnabled: true,
         schedule: {
             times: ['08:00'],
             days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
         }
     });
 
-    useEffect(() => {
-        if (medicationToEdit) {
-            setFormData(medicationToEdit);
-        }
-    }, [medicationToEdit]);
+    // Track the medication object being edited to detect updates
+    const [prevMedication, setPrevMedication] = useState(null);
+    // If the medication to edit prop changes, synchronize the local form data
+    if (medicationToEdit !== prevMedication) {
+        // Update the tracked previous medication state
+        setPrevMedication(medicationToEdit);
+        // Reset the form values to match the medication being edited, or default state
+        setFormData(medicationToEdit ? {
+            // Copy all properties from the medication being edited
+            ...medicationToEdit,
+            // Ensure remindersEnabled is defaulted to true if not explicitly false
+            remindersEnabled: medicationToEdit.remindersEnabled !== false
+        // Fallback to the default form state configuration if creating new medication
+        } : {
+            // Preset name field value
+            name: '',
+            // Preset dosage field value
+            dosage: '',
+            // Preset total pills field value
+            totalPills: '',
+            // Preset frequency type selection
+            frequency: 'daily',
+            // Preset food relationship setting
+            relationToFood: 'with_food',
+            // Enable medication push reminders by default
+            remindersEnabled: true,
+            // Preset schedule configuration mapping
+            schedule: {
+                // Default array of intake times
+                times: ['08:00'],
+                // Default array of days scheduled
+                days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            // End of schedule configuration
+            }
+        // End of setFormData call
+        });
+        // Reset dialog page step to 1
+        setStep(1);
+    // End of medication comparison check
+    }
 
     if (!isOpen) return null;
 
@@ -189,6 +227,33 @@ const AddEditMedicationDialog = ({ isOpen, onClose, medicationToEdit }) => {
                                         </div>
                                     ))}
                                 </div>
+                            </div>
+
+                            {/* Container for enabling push notification reminders */}
+                            <div className="flex items-center gap-2 border-t pt-4">
+                                {/* Checkbox component to toggle reminders state */}
+                                <Checkbox
+                                    // Set checkbox unique identifier
+                                    id="remindersEnabled"
+                                    // Bind checkbox checked status to form data setting
+                                    checked={formData.remindersEnabled}
+                                    // Update state context when checkbox status toggles
+                                    onCheckedChange={(checked) => setFormData(prev => ({
+                                        // Merge previous form fields
+                                        ...prev,
+                                        // Update remindersEnabled attribute with check state
+                                        remindersEnabled: !!checked
+                                    // End of form state update block
+                                    }))}
+                                // End checkbox attributes
+                                />
+                                {/* Text label pointing to the reminders toggle */}
+                                <Label htmlFor="remindersEnabled" className="cursor-pointer">
+                                    {/* String indicating push notification option */}
+                                    Enable push notifications / reminders for this medicine
+                                {/* End of label element */}
+                                </Label>
+                            {/* End layout container */}
                             </div>
                         </div>
                     )}
