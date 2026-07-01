@@ -18,8 +18,8 @@ const Layout = ({ children }) => {
     return (
         // Root wrapper with minimum full screen height and base styles
         <div className="min-h-screen bg-background font-sans antialiased">
-            {/* Sticky top navigation header */}
-            <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            {/* Relative top navigation header */}
+            <header className="relative z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 {/* Inner container with horizontal flex layout */}
                 <div className="container flex h-14 max-w-screen-2xl items-center justify-between px-4">
                     {/* Left section: app brand branding */}
