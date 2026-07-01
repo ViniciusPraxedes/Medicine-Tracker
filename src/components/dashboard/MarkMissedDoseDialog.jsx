@@ -150,7 +150,8 @@ const MarkMissedDoseDialog = ({ open, onOpenChange, selectedDate }) => {
                                         size="sm"
                                         variant={dose.taken ? "outline" : "default"}
                                         onClick={() => dose.taken ? handleUndoDose(dose) : handleMarkAsTaken(dose)}
-                                        disabled={processing}
+                                        // Disable the button when processing or when not taken and no pills left
+                                        disabled={processing || (!dose.taken && dose.medication.currentPills <= 0)}
                                         className={cn(
                                             "gap-1 min-w-[100px]",
                                             dose.taken && "text-muted-foreground hover:text-primary"

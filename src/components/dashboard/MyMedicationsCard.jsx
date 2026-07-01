@@ -5,6 +5,9 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useStore } from '@/context/StoreContext';
 import AddEditMedicationDialog from './AddEditMedicationDialog';
+// Import the cn utility function for conditional classNames
+import { cn } from '@/lib/utils';
+
 
 const MyMedicationsCard = () => {
     const { medications, deleteMedication, refillMedication } = useStore();
@@ -47,10 +50,8 @@ const MyMedicationsCard = () => {
                 ) : (
                     <div className="space-y-4">
                         {medications.map((med) => (
-                            <div
-                                key={med.id}
-                                className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
-                            >
+                            <div key={med.id} className={cn("flex items-center justify-between p-4 rounded-xl border bg-card hover:bg-accent/5 transition-all duration-300", med.currentPills <= 5 ? "border-destructive/30 bg-destructive/5" : "border-border/60")}>
+                                {/* Individual medication list card item wrapper container */}
                                 <div className="space-y-1">
                                     <h3 className="font-semibold leading-none">{med.name}</h3>
                                     <p className="text-sm text-muted-foreground">
@@ -72,6 +73,14 @@ const MyMedicationsCard = () => {
                                             <span className="flex items-center text-muted-foreground gap-0.5 text-[10px] font-medium bg-accent/30 px-1.5 py-0.5 rounded" title="Reminders muted">
                                                 {/* Muted BellOff icon */}
                                                 <BellOff className="h-2.5 w-2.5" /> Muted
+                                            </span>
+                                        )}
+                                        {/* Conditionally display low stock indicator badge if pills are <= 5 */}
+                                        {med.currentPills <= 5 && (
+                                            // Red pulsing badge to capture user attention on mobile
+                                            <span className="flex items-center text-destructive gap-0.5 text-[10px] font-semibold bg-destructive/10 px-1.5 py-0.5 rounded animate-pulse" title="Low pills remaining">
+                                                {/* Low stock badge text label */}
+                                                Low Stock
                                             </span>
                                         )}
                                     {/* End of schedule info block */}

@@ -87,7 +87,8 @@ const WeekProgressCard = () => {
 
     return (
         <>
-            <Card className="col-span-1 md:col-span-2 lg:col-span-2 h-[350px] flex flex-col">
+            {/* Main card container with scaled height of 260px on mobile and 350px on desktop */}
+            <Card className="col-span-1 md:col-span-2 lg:col-span-2 h-[260px] md:h-[350px] flex flex-col">
                 <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
                     <CardTitle className="text-xl font-bold flex items-center gap-2">
                         <BarChart2 className="h-5 w-5 text-primary" />

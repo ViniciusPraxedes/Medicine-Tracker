@@ -54,63 +54,179 @@ exports.sendMedicationReminders = onSchedule("* * * * *", async () => {
                     return;
                     // End of medications check conditional
                 }
-                // Iterate through each medication document
+                // Calculate timestamp for 24 hours ago as ISO string
+                const yesterdayIso = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+                // Query logs subcollection for entries created in the last 24 hours
+                const logsSnapshot = await db.collection("users").doc(userDoc.id).collection("logs").where("timestamp", ">=", yesterdayIso).get();
+                // Helper to format date string safely matching timezone
+                let dateStr = "";
+                // Begin block to format date safely
+                try {
+                    // Create date formatter with user timezone
+                    const formatter = new Intl.DateTimeFormat("en-US", {
+                        // Request four digit year format
+                        year: "numeric",
+                        // Request two digit month format
+                        month: "2-digit",
+                        // Request two digit day format
+                        day: "2-digit",
+                        // Pass active user timezone parameter
+                        timeZone: timezone
+                    // End of Intl.DateTimeFormat configuration object
+                    });
+                    // Format current date to parts
+                    const parts = formatter.formatToParts(now);
+                    // Find year component
+                    const yearPart = parts.find(p => p.type === 'year').value;
+                    // Find month component
+                    const monthPart = parts.find(p => p.type === 'month').value;
+                    // Find day component
+                    const dayPart = parts.find(p => p.type === 'day').value;
+                    // Merge parts to YYYY-MM-DD format
+                    dateStr = `${yearPart}-${monthPart}-${dayPart}`;
+                // Catch any date formatting errors
+                } catch (err) {
+                    // Fall back to UTC ISO date string if timezone formatting fails
+                    dateStr = now.toISOString().split('T')[0];
+                // End of date formatting try catch block
+                }
+                // Initialize list to hold today's taken medication logs
+                const takenLogs = [];
+                // Check if any logs were retrieved for the user
+                if (!logsSnapshot.empty) {
+                    // Loop through each log document in the snapshot
+                    logsSnapshot.forEach((logDoc) => {
+                        // Extract log document data payload
+                        const logData = logDoc.data();
+                        // Verify if log matches taken action and matches user local date
+                        if (logData.action === "take" && logData.timestamp && logData.timestamp.startsWith(dateStr)) {
+                            // Add log record including document identifier to our list
+                            takenLogs.push({ id: logDoc.id, ...logData });
+                        // End of log match condition check
+                        }
+                    // End of logs snapshots loop iteration
+                    });
+                // End of logs snapshot empty check conditional
+                }
+                // Initialize list to compile all scheduled doses for today
+                const doses = [];
+                // Iterate through each medication document in the snapshot
                 medsSnapshot.forEach((medDoc) => {
-                    // Extract the medication properties
+                    // Extract medication document data payload
                     const med = medDoc.data();
                     // Check if reminders are enabled for this medication (defaulting to true)
                     if (med.remindersEnabled !== false) {
-                        // Check if schedule is defined and contains days and times arrays
+                        // Validate schedule layout configuration presence
                         if (med.schedule && Array.isArray(med.schedule.days) && Array.isArray(med.schedule.times)) {
-                            // Check if the medication is scheduled for the user's current day
+                            // Check if medication is scheduled for current day abbreviation
                             if (med.schedule.days.includes(userDay)) {
-                                // Find if any scheduled time matches the reminder interval
-                                const dueTime = med.schedule.times.find((timeStr) => {
-                                    // Split the time string into hour and minute integers
-                                    const [hour, minute] = timeStr.split(":").map(Number);
-                                    // Get the current time string in the user's local timezone
-                                    const localTimeStr = now.toLocaleTimeString("en-US", { hour12: false, timeZone: timezone });
-                                    // Split local time string to parse hours and minutes
-                                    const [currHour, currMinute] = localTimeStr.split(":").map(Number);
-                                    // Calculate total minutes from midnight for the scheduled time
-                                    const schedMin = hour * 60 + minute;
-                                    // Calculate total minutes from midnight for current local time
-                                    const currMin = currHour * 60 + currMinute;
-                                    // Calculate difference in minutes between current time and scheduled time
-                                    const diff = currMin - schedMin;
-                                    // Check if scheduled time is due within the 1 minute window
-                                    return diff >= 0 && diff < 1;
-                                    // End of find check
+                                // Loop through all scheduled time strings
+                                med.schedule.times.forEach((timeStr) => {
+                                    // Append dose detail payload containing medication and time
+                                    doses.push({
+                                        // Store medication identifier
+                                        medicationId: medDoc.id,
+                                        // Store medication name
+                                        medicationName: med.name,
+                                        // Store custom snooze interval in minutes or default to 10
+                                        snoozeInterval: med.snoozeInterval !== undefined ? Number(med.snoozeInterval) : 10,
+                                        // Store scheduled time string
+                                        time: timeStr,
+                                        // Initialize taken flag to false
+                                        taken: false
+                                    // End of dose object structure
+                                    });
+                                // End of scheduled times loop iteration
                                 });
-                                // If a due time has been found, send a push notification
-                                if (dueTime) {
-                                    // Construct the FCM message payload
-                                    const message = {
-                                        // Target registration token of the user's device
-                                        token: userData.fcmToken,
-                                        // Specify notification content details
-                                        notification: {
-                                            // Title of the push notification alert
-                                            title: "Reminder"
-                                            // End of notification details object
-                                        }
-                                        // End of message object structure
-                                    };
-                                    // Send the FCM notification and catch failures
-                                    messaging.send(message)
-                                        // Log successful message sends
-                                        .then((response) => console.log("Sent notification:", response))
-                                        // Log failed message sends
-                                        .catch((err) => console.error("Error sending notification:", err));
-                                    // End of dueTime check conditional
-                                }
-                                // End of day schedule match check
+                            // End of schedule day match check
                             }
-                            // End of schedule validation check
+                        // End of schedule layout check
                         }
-                        // End of remindersEnabled check conditional
+                    // End of remindersEnabled check conditional
                     }
-                    // End of medications loop
+                // End of medication documents loop iteration
+                });
+                // Sort list of doses chronologically by scheduled time
+                doses.sort((a, b) => a.time.localeCompare(b.time));
+                // Create a set tracking matched log identifiers
+                const processedLogs = new Set();
+                // Iterate through each scheduled dose
+                doses.forEach((dose) => {
+                    // Find first unused matching taken log for the same medication
+                    const matchingLog = takenLogs.find((l) => l.medicationId === dose.medicationId && !processedLogs.has(l.id));
+                    // Check if a matching log was found
+                    if (matchingLog) {
+                        // Mark scheduled dose as taken
+                        dose.taken = true;
+                        // Record log identifier as processed/matched
+                        processedLogs.add(matchingLog.id);
+                    // End of matching log check conditional
+                    }
+                // End of doses loop iteration
+                });
+                // Get the current local time string in 24-hour format
+                const localTimeStr = now.toLocaleTimeString("en-US", { hour12: false, timeZone: timezone });
+                // Parse current local hour and minute integer numbers
+                const [currHour, currMinute] = localTimeStr.split(":").map(Number);
+                // Compute total minutes from midnight for current local time
+                const currMin = currHour * 60 + currMinute;
+                // Iterate through all scheduled doses to identify due reminders
+                doses.forEach((dose) => {
+                    // Check if the scheduled dose has not been marked as taken
+                    if (!dose.taken) {
+                        // Parse scheduled hour and minute integer values
+                        const [schedHour, schedMinute] = dose.time.split(":").map(Number);
+                        // Compute total minutes from midnight for the scheduled time
+                        const schedMin = schedHour * 60 + schedMinute;
+                        // Compute elapsed difference in minutes since scheduled time
+                        const diff = currMin - schedMin;
+                        // Check if the current time is due or overdue
+                        if (diff >= 0) {
+                            // Initialize reminder notification trigger flag
+                            let shouldNotify = false;
+                            // Check if current minute matches exact scheduled time
+                            if (diff === 0) {
+                                // Trigger initial notification
+                                shouldNotify = true;
+                            // Check if overdue minutes match snooze interval and are within limit
+                            } else if (dose.snoozeInterval > 0 && diff <= 60 && diff % dose.snoozeInterval === 0) {
+                                // Trigger snooze notification
+                                shouldNotify = true;
+                            // End of trigger conditions check
+                            }
+                            // Check if the notification should be triggered
+                            if (shouldNotify) {
+                                // Determine if this is a snooze notification or first alert
+                                const isSnooze = diff > 0;
+                                // Build push notification FCM message structure
+                                const message = {
+                                    // Device registration token reference
+                                    token: userData.fcmToken,
+                                    // Define notification alert content properties
+                                    notification: {
+                                        // Set header alert title based on snooze status
+                                        title: isSnooze ? `Snooze: ${dose.medicationName}` : `Reminder: ${dose.medicationName}`,
+                                        // Set detail alert body message with instructions
+                                        body: isSnooze
+                                            ? `You missed your scheduled dose of ${dose.medicationName} (${dose.time}). Please take it and mark it as taken.`
+                                            : `It is time to take your ${dose.medicationName} (${dose.time}).`
+                                    // End of notification content details
+                                    }
+                                // End of message object structure
+                                };
+                                // Send FCM push notification payload to user device
+                                messaging.send(message)
+                                    // Log successful FCM message delivery response
+                                    .then((response) => console.log("Sent notification successfully:", response))
+                                    // Output FCM delivery failure reason to server logs
+                                    .catch((err) => console.error("Error sending push notification:", err));
+                            // End of shouldNotify check conditional
+                            }
+                        // End of diff >= 0 check conditional
+                        }
+                    // End of dose.taken check conditional
+                    }
+                // End of doses iteration loop
                 });
                 // End of user processing async function
             })());

@@ -125,51 +125,50 @@ const TodayScheduleCard = () => {
                 ) : (
                     <div className="space-y-3">
                         {doses.map((dose) => (
-                            <div
-                                key={dose.id}
-                                className={cn(
-                                    "flex items-center justify-between p-3 rounded-lg border transition-all",
-                                    dose.taken
-                                        ? "bg-primary/10 border-primary/20"
-                                        : "bg-card hover:bg-accent/5"
-                                )}
-                            >
+                            <div key={dose.id} className={cn("flex items-center justify-between p-3 rounded-xl border transition-all duration-300", dose.taken ? "bg-primary/5 border-primary/20 shadow-sm" : "bg-card border-border hover:bg-accent/5 hover:border-border/80")}>
+                                {/* Individual dose list card container wrapper element */}
+                                {/* Inner left grouping layout */}
                                 <div className="flex items-center gap-3">
-                                    <div className={cn(
-                                        "flex items-center justify-center w-10 h-10 rounded-full border-2 font-semibold text-xs",
-                                        dose.taken ? "border-primary text-primary bg-background" : "border-muted-foreground text-muted-foreground"
-                                    )}>
+                                    {/* Circle visual container with scheduled time label */}
+                                    <div className={cn("flex items-center justify-center w-10 h-10 rounded-full border-2 font-semibold text-xs transition-all duration-300", dose.taken ? "border-primary text-primary bg-primary/10 scale-105" : "border-muted-foreground/30 text-muted-foreground bg-background")}>
+                                        {/* Reference to scheduled dose time string value */}
                                         {dose.time}
+                                    {/* End of time slot circle container */}
                                     </div>
+                                    {/* Text detail container */}
                                     <div>
-                                        <h4 className={cn("font-semibold", dose.taken && "text-primary")}>
+                                        {/* Medication name text header with color transition */}
+                                        <h4 className={cn("font-semibold transition-colors duration-300", dose.taken && "text-primary")}>
+                                            {/* Name text reference */}
                                             {dose.medication.name}
                                         </h4>
+                                        {/* Extra detail info labels */}
                                         <p className="text-xs text-muted-foreground">
+                                            {/* Text containing dosage and relationship to food info */}
                                             {dose.medication.dosage} • {dose.medication.relationToFood === 'with_food' ? 'With food' : 'No food'}
                                         </p>
                                     </div>
                                 </div>
 
-                                <Button
-                                    size="sm"
-                                    variant={dose.taken ? "outline" : "default"}
-                                    onClick={() => dose.taken ? handleUndo(dose) : handleTake(dose)}
-                                    className={cn(
-                                        "gap-1 min-w-[80px]",
-                                        dose.taken && "text-muted-foreground hover:text-primary"
-                                    )}
-                                >
+                                {/* Trigger check button component */}
+                                <Button size="sm" variant={dose.taken ? "outline" : "default"} onClick={() => dose.taken ? handleUndo(dose) : handleTake(dose)} disabled={!dose.taken && dose.medication.currentPills <= 0} className={cn("gap-1 min-w-[80px] rounded-lg transition-all duration-200 active:scale-95", dose.taken ? "text-muted-foreground border-border bg-transparent hover:text-primary hover:border-primary/40 hover:bg-primary/5" : "bg-primary hover:bg-primary/95 text-primary-foreground shadow-sm shadow-primary/20")}>
+                                    {/* Conditionally render icon and labels */}
                                     {dose.taken ? (
+                                        // Output taken code element structure
                                         <>
+                                            {/* Reset icons for undo actions */}
                                             <RotateCcw className="h-3 w-3" /> Taken
                                         </>
                                     ) : (
+                                        // Output untaken code element structure
                                         <>
+                                            {/* Checked status icon representing take action */}
                                             <Check className="h-3 w-3" /> Take
                                         </>
                                     )}
+                                {/* End of button component */}
                                 </Button>
+                            {/* End of individual dose item */}
                             </div>
                         ))}
                     </div>

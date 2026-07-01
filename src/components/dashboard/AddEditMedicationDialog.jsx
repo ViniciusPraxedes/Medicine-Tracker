@@ -28,6 +28,8 @@ const AddEditMedicationDialog = ({ isOpen, onClose, medicationToEdit }) => {
         relationToFood: 'with_food',
         // Enable medication push reminders by default
         remindersEnabled: true,
+        // Set the default snooze interval in minutes
+        snoozeInterval: 10,
         schedule: {
             times: ['08:00'],
             days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
@@ -45,7 +47,9 @@ const AddEditMedicationDialog = ({ isOpen, onClose, medicationToEdit }) => {
             // Copy all properties from the medication being edited
             ...medicationToEdit,
             // Ensure remindersEnabled is defaulted to true if not explicitly false
-            remindersEnabled: medicationToEdit.remindersEnabled !== false
+            remindersEnabled: medicationToEdit.remindersEnabled !== false,
+            // Set snooze interval from edit medication or default to 10 minutes
+            snoozeInterval: medicationToEdit.snoozeInterval !== undefined ? medicationToEdit.snoozeInterval : 10
         // Fallback to the default form state configuration if creating new medication
         } : {
             // Preset name field value
@@ -60,6 +64,8 @@ const AddEditMedicationDialog = ({ isOpen, onClose, medicationToEdit }) => {
             relationToFood: 'with_food',
             // Enable medication push reminders by default
             remindersEnabled: true,
+            // Set default snooze interval in minutes
+            snoozeInterval: 10,
             // Preset schedule configuration mapping
             schedule: {
                 // Default array of intake times
@@ -125,9 +131,12 @@ const AddEditMedicationDialog = ({ isOpen, onClose, medicationToEdit }) => {
         }));
     };
 
+    // Render the dialog overlay with conditional centering/bottom alignment
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="w-full max-w-lg rounded-lg border bg-background p-6 shadow-lg animate-in fade-in zoom-in duration-200">
+        // Backdrop overlay styled to center content on desktop and place at bottom on mobile
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm">
+            {/* Slide-up dialog container layout for mobile, centered on larger viewports */}
+            <div className="w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl border bg-background p-6 shadow-lg animate-in fade-in slide-in-from-bottom duration-300 sm:zoom-in-95">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold">
                         {medicationToEdit ? 'Edit Medication' : 'Add New Medication'}
@@ -255,6 +264,39 @@ const AddEditMedicationDialog = ({ isOpen, onClose, medicationToEdit }) => {
                                 </Label>
                             {/* End layout container */}
                             </div>
+
+                            {/* Conditional rendering based on whether push notification reminders are enabled */}
+                            {formData.remindersEnabled && (
+                                <div className="grid gap-2 border-t pt-4">
+                                    {/* Text label element indicating snooze configuration field */}
+                                    <Label htmlFor="snoozeInterval">Snooze Interval</Label>
+                                    {/* Dropdown element to capture custom snooze interval duration */}
+                                    <select
+                                        // Set select field unique HTML identifier
+                                        id="snoozeInterval"
+                                        // Select element styling classes
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                        // Bind input value context to the snoozeInterval state attribute
+                                        value={formData.snoozeInterval}
+                                        // Update state with parsed snooze interval duration
+                                        onChange={(e) => setFormData({ ...formData, snoozeInterval: parseInt(e.target.value) })}
+                                    // Close select element opening tag properties
+                                    >
+                                        {/* Dropdown option for five minutes snooze frequency */}
+                                        <option value="5">Every 5 minutes</option>
+                                        {/* Dropdown option for ten minutes snooze frequency */}
+                                        <option value="10">Every 10 minutes</option>
+                                        {/* Dropdown option for fifteen minutes snooze frequency */}
+                                        <option value="15">Every 15 minutes</option>
+                                        {/* Dropdown option for thirty minutes snooze frequency */}
+                                        <option value="30">Every 30 minutes</option>
+                                        {/* Dropdown option to completely disable notification snooze */}
+                                        <option value="0">No snooze (Notify once)</option>
+                                    {/* Close select dropdown tag */}
+                                    </select>
+                                {/* Close form field layout container */}
+                                </div>
+                            )}
                         </div>
                     )}
 

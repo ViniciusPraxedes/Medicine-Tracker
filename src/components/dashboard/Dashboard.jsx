@@ -13,6 +13,24 @@ const Dashboard = () => {
     const [isRequesting, setIsRequesting] = useState(false);
     const [permissionGranted, setPermissionGranted] = useState(Notification.permission === 'granted');
 
+    // Get the current hour of the system
+    const currentHour = new Date().getHours();
+    // Initialize greeting string variable
+    let greeting = "Hello";
+    // Check if the current time is morning
+    if (currentHour < 12) {
+        // Set greeting to good morning
+        greeting = "Good morning";
+    // Check if the current time is afternoon
+    } else if (currentHour < 18) {
+        // Set greeting to good afternoon
+        greeting = "Good afternoon";
+    // Otherwise it is evening
+    } else {
+        // Set greeting to good evening
+        greeting = "Good evening";
+    }
+
     const handleEnableNotifications = async () => {
         if (!user) return;
         setIsRequesting(true);
@@ -29,7 +47,10 @@ const Dashboard = () => {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <div className="col-span-full flex justify-between items-center bg-card p-6 rounded-xl border shadow-sm">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+                    {/* Render dynamic greeting text based on time of day and username */}
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        {greeting}, {user?.displayName ? user.displayName.split(' ')[0] : 'User'}
+                    </h1>
                     <p className="text-muted-foreground mt-1">Manage your medications and track adherence.</p>
                 </div>
                 {!permissionGranted && (

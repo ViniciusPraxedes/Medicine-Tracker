@@ -2,9 +2,11 @@ import React from "react"
 import { cn } from "@/lib/utils"
 
 const Card = React.forwardRef(({ className, ...props }, ref) => (
+    // Render the base Card element with rounded-2xl and transition styles
     <div
         ref={ref}
-        className={cn("rounded-lg border bg-card text-card-foreground shadow-sm", className)}
+        // Tailwind classes for modern curved corners and soft interactive shadow styling
+        className={cn("rounded-2xl border border-border/60 bg-card text-card-foreground shadow-sm hover:shadow-md transition-all duration-300", className)}
         {...props}
     />
 ))
