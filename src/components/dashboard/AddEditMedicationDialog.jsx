@@ -282,14 +282,14 @@ const AddEditMedicationDialog = ({ isOpen, onClose, medicationToEdit }) => {
                                         onChange={(e) => setFormData({ ...formData, snoozeInterval: parseInt(e.target.value) })}
                                     // Close select element opening tag properties
                                     >
-                                        {/* Dropdown option for five minutes snooze frequency */}
-                                        <option value="5">Every 5 minutes</option>
-                                        {/* Dropdown option for ten minutes snooze frequency */}
-                                        <option value="10">Every 10 minutes</option>
-                                        {/* Dropdown option for fifteen minutes snooze frequency */}
-                                        <option value="15">Every 15 minutes</option>
-                                        {/* Dropdown option for thirty minutes snooze frequency */}
-                                        <option value="30">Every 30 minutes</option>
+                                        {/* Dropdown option for five seconds snooze frequency */}
+                                        <option value="5">Every 5 seconds</option>
+                                        {/* Dropdown option for ten seconds snooze frequency */}
+                                        <option value="10">Every 10 seconds</option>
+                                        {/* Dropdown option for fifteen seconds snooze frequency */}
+                                        <option value="15">Every 15 seconds</option>
+                                        {/* Dropdown option for thirty seconds snooze frequency */}
+                                        <option value="30">Every 30 seconds</option>
                                         {/* Dropdown option to completely disable notification snooze */}
                                         <option value="0">No snooze (Notify once)</option>
                                     {/* Close select dropdown tag */}
