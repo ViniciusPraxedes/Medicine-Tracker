@@ -188,8 +188,8 @@ exports.sendMedicationReminders = onSchedule("* * * * *", async () => {
                             if (diff === 0) {
                                 // Trigger initial notification
                                 shouldNotify = true;
-                            // Check if overdue minutes match snooze interval and are within limit
-                            } else if (dose.snoozeInterval > 0 && diff <= 60 && diff % dose.snoozeInterval === 0) {
+                            // Check if overdue minutes match snooze interval
+                            } else if (dose.snoozeInterval > 0 && diff % dose.snoozeInterval === 0) {
                                 // Trigger snooze notification
                                 shouldNotify = true;
                             // End of trigger conditions check
