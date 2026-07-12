@@ -282,6 +282,8 @@ const AddEditMedicationDialog = ({ isOpen, onClose, medicationToEdit }) => {
                                         onChange={(e) => setFormData({ ...formData, snoozeInterval: parseInt(e.target.value) })}
                                     // Close select element opening tag properties
                                     >
+                                        {/* Dropdown option for one minute snooze frequency */}
+                                        <option value="1">Every 1 minute</option>
                                         {/* Dropdown option for five minutes snooze frequency */}
                                         <option value="5">Every 5 minutes</option>
                                         {/* Dropdown option for ten minutes snooze frequency */}
