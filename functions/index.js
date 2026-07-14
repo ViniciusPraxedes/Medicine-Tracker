@@ -98,8 +98,24 @@ exports.sendMedicationReminders = onSchedule("* * * * *", async () => {
                     logsSnapshot.forEach((logDoc) => {
                         // Extract log document data payload
                         const logData = logDoc.data();
+                        
+                        let logMatchesDate = false;
+                        if (logData.action === "take" && logData.timestamp) {
+                            try {
+                                const logDate = new Date(logData.timestamp);
+                                const parts = formatter.formatToParts(logDate);
+                                const logYear = parts.find(p => p.type === 'year').value;
+                                const logMonth = parts.find(p => p.type === 'month').value;
+                                const logDay = parts.find(p => p.type === 'day').value;
+                                const logDateStr = `${logYear}-${logMonth}-${logDay}`;
+                                logMatchesDate = (logDateStr === dateStr);
+                            } catch (e) {
+                                logMatchesDate = logData.timestamp.startsWith(dateStr);
+                            }
+                        }
+
                         // Verify if log matches taken action and matches user local date
-                        if (logData.action === "take" && logData.timestamp && logData.timestamp.startsWith(dateStr)) {
+                        if (logMatchesDate) {
                             // Add log record including document identifier to our list
                             takenLogs.push({ id: logDoc.id, ...logData });
                         // End of log match condition check
