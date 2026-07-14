@@ -164,10 +164,12 @@ exports.sendMedicationReminders = onSchedule("* * * * *", async () => {
                     }
                 // End of doses loop iteration
                 });
-                // Get the current local time string in 24-hour format
-                const localTimeStr = now.toLocaleTimeString("en-US", { hour12: false, timeZone: timezone });
+                // Get the current local time string in 24-hour format (using hourCycle h23 to avoid 24:00)
+                const localTimeStr = now.toLocaleTimeString("en-US", { hourCycle: "h23", timeZone: timezone });
                 // Parse current local hour and minute integer numbers
-                const [currHour, currMinute] = localTimeStr.split(":").map(Number);
+                let [currHour, currMinute] = localTimeStr.split(":").map(Number);
+                // Handle older node environments returning 24 for midnight
+                if (currHour === 24) currHour = 0;
                 // Compute total minutes from midnight for current local time
                 const currMin = currHour * 60 + currMinute;
                 // Iterate through all scheduled doses to identify due reminders
