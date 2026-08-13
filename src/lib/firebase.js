@@ -3,14 +3,23 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 
+// Declare the Firebase configuration object using dynamic environment parameters
 const firebaseConfig = {
-    apiKey: "AIzaSyC5vqcG7-KT4X9f80F9hnVnQtA3PPpdzcw",
-    authDomain: "gen-lang-client-0191688350.firebaseapp.com",
-    projectId: "gen-lang-client-0191688350",
-    storageBucket: "gen-lang-client-0191688350.firebasestorage.app",
-    messagingSenderId: "782298438626",
-    appId: "1:782298438626:web:9989f27af6cfb3598cf7bb",
-    measurementId: "G-NQF4STJ0JY"
+    // Retrieve the Firebase API Key dynamically from environment variables
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    // Retrieve the Firebase Auth Domain dynamically from environment variables
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    // Retrieve the Firebase Project ID dynamically from environment variables
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    // Retrieve the Firebase Storage Bucket dynamically from environment variables
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    // Retrieve the Firebase Messaging Sender ID dynamically from environment variables
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    // Retrieve the Firebase App ID dynamically from environment variables
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    // Retrieve the Firebase Measurement ID dynamically from environment variables
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+// Close the Firebase configuration object declaration
 };
 
 const app = initializeApp(firebaseConfig);
@@ -19,7 +28,8 @@ export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
 
 export const messaging = getMessaging(app);
-const VAPID_KEY = "BOy7n9TIdKYhbJe6Qwe7_D1U7nQ5UKpbi0xcNHQXsJNiCPa0ra3QuUvEKOc7Icp13iuvwDurEokQo2AxCCsI_04";
+// Retrieve the VAPID key dynamically from environment variables
+const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY;
 
 export const requestNotificationPermission = async (userId) => {
     // Start block to request permission and retrieve FCM token with timezone info

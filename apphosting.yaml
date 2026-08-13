@@ -6,37 +6,37 @@ run:
   command: npm start
 env:
   - variable: VITE_FIREBASE_API_KEY
-    value: "AIzaSyC5vqcG7-KT4X9f80F9hnVnQtA3PPpdzcw"
+    secret: VITE_FIREBASE_API_KEY
     availability:
       - BUILD
       - RUNTIME
   - variable: VITE_FIREBASE_AUTH_DOMAIN
-    value: "gen-lang-client-0191688350.firebaseapp.com"
+    secret: VITE_FIREBASE_AUTH_DOMAIN
     availability:
       - BUILD
       - RUNTIME
   - variable: VITE_FIREBASE_PROJECT_ID
-    value: "gen-lang-client-0191688350"
+    secret: VITE_FIREBASE_PROJECT_ID
     availability:
       - BUILD
       - RUNTIME
   - variable: VITE_FIREBASE_STORAGE_BUCKET
-    value: "gen-lang-client-0191688350.firebasestorage.app"
+    secret: VITE_FIREBASE_STORAGE_BUCKET
     availability:
       - BUILD
       - RUNTIME
   - variable: VITE_FIREBASE_MESSAGING_SENDER_ID
-    value: "782298438626"
+    secret: VITE_FIREBASE_MESSAGING_SENDER_ID
     availability:
       - BUILD
       - RUNTIME
   - variable: VITE_FIREBASE_APP_ID
-    value: "1:782298438626:web:9989f27af6cfb3598cf7bb"
+    secret: VITE_FIREBASE_APP_ID
     availability:
       - BUILD
       - RUNTIME
   - variable: VITE_FIREBASE_MEASUREMENT_ID
-    value: "G-NQF4STJ0JY"
+    secret: VITE_FIREBASE_MEASUREMENT_ID
     availability:
       - BUILD
       - RUNTIME
