@@ -24,9 +24,67 @@ const firebaseConfig = {
 // End of dynamic Firebase configuration declaration
 };
 
-firebase.initializeApp(firebaseConfig);
+// Check if the required API key and project ID parameters are present in search parameters
+if (params.get("apiKey") && params.get("projectId")) {
+    // Initialize the Firebase application instance with dynamic parameters
+    firebase.initializeApp(firebaseConfig);
+    // Initialize the Firebase Cloud Messaging client
+    const messaging = firebase.messaging();
+    // Register the background message handler callback
+    messaging.onBackgroundMessage((payload) => {
+        // Extract notification title with fallback text
+        const notificationTitle = payload?.notification?.title || "Medication Reminder";
+        // Define notification presentation options
+        const notificationOptions = {
+            // Set notification body text
+            body: payload?.notification?.body || "You have a scheduled medication reminder.",
+            // Set notification display icon
+            icon: "/favicon.png",
+            // Set notification badge icon
+            badge: "/favicon.png",
+            // Attach payload data object
+            data: payload?.data || {}
+        // Close notification presentation options
+        };
+        // Show system notification using the service worker registration
+        return self.registration.showNotification(notificationTitle, notificationOptions);
+    // Close onBackgroundMessage handler
+    });
+// Close parameter presence check conditional
+}
 
-const messaging = firebase.messaging();
+// Add an event listener for notification click actions
+self.addEventListener("notificationclick", (event) => {
+    // Close the clicked system notification
+    event.notification.close();
+    // Keep service worker active until window focus or navigation completes
+    event.waitUntil(
+        // Search through all existing client windows
+        self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+            // Iterate over all discovered open window clients
+            for (let i = 0; i < clientList.length; i++) {
+                // Reference the current client entry
+                const client = clientList[i];
+                // Check if client URL exists and focus method is available
+                if (client.url && "focus" in client) {
+                    // Focus the existing open application window
+                    return client.focus();
+                // Close client check conditional
+                }
+            // Close client iteration loop
+            }
+            // Verify if openWindow API is available on clients
+            if (self.clients.openWindow) {
+                // Open the application root in a new window
+                return self.clients.openWindow("/");
+            // Close openWindow availability check
+            }
+        // Close client list resolution handler
+        })
+    // Close waitUntil handler call
+    );
+// Close notificationclick event listener
+});
 
 // Add an event listener for the install phase of the service worker
 self.addEventListener("install", () => {

@@ -188,6 +188,8 @@ exports.sendMedicationReminders = onSchedule("* * * * *", async () => {
                 if (currHour === 24) currHour = 0;
                 // Compute total minutes from midnight for current local time
                 const currMin = currHour * 60 + currMinute;
+                // Initialize array to collect all push notification delivery promises
+                const notificationPromises = [];
                 // Iterate through all scheduled doses to identify due reminders
                 doses.forEach((dose) => {
                     // Check if the scheduled dose has not been marked as taken
@@ -232,12 +234,16 @@ exports.sendMedicationReminders = onSchedule("* * * * *", async () => {
                                     }
                                 // End of message object structure
                                 };
-                                // Send FCM push notification payload to user device
-                                messaging.send(message)
-                                    // Log successful FCM message delivery response
-                                    .then((response) => console.log("Sent notification successfully:", response))
-                                    // Output FCM delivery failure reason to server logs
-                                    .catch((err) => console.error("Error sending push notification:", err));
+                                // Queue the FCM push notification delivery promise
+                                notificationPromises.push(
+                                    // Send FCM push notification payload to user device
+                                    messaging.send(message)
+                                        // Log successful FCM message delivery response
+                                        .then((response) => console.log("Sent notification successfully:", response))
+                                        // Output FCM delivery failure reason to server logs
+                                        .catch((err) => console.error("Error sending push notification:", err))
+                                // End of queued promise push
+                                );
                             // End of shouldNotify check conditional
                             }
                         // End of diff >= 0 check conditional
@@ -246,6 +252,8 @@ exports.sendMedicationReminders = onSchedule("* * * * *", async () => {
                     }
                 // End of doses iteration loop
                 });
+                // Wait for all pending notification deliveries for this user to finish
+                await Promise.all(notificationPromises);
                 // End of user processing async function
             })());
             // End of user docs loop
