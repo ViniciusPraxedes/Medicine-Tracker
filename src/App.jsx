@@ -68,8 +68,8 @@ const AuthWrapper = () => {
     if (user) {
       const unsubscribe = listenForMessages((payload) => {
         console.log('Message received in foreground: ', payload);
-        // Trigger a browser alert with the message payload title and body
-        alert(`🔔 ${payload?.notification?.title || 'New Notification'}\n${payload?.notification?.body || ''}`);
+        // Trigger a browser alert with the message payload title
+        alert(`🔔 ${payload?.notification?.title || 'New Notification'}${payload?.notification?.body ? `\n${payload.notification.body}` : ''}`);
       });
       // listenForMessages does not return an unsubscribe function in the v9 modular SDK usually
       // but if it does, it's safe to return it.

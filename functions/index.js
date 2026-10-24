@@ -233,11 +233,7 @@ exports.sendMedicationReminders = onSchedule("* * * * *", async () => {
                                         // Define notification alert content properties
                                         notification: {
                                             // Set header alert title based on snooze status
-                                            title: isSnooze ? `Snooze: ${dose.medicationName}` : `Reminder: ${dose.medicationName}`,
-                                            // Set detail alert body message with instructions
-                                            body: isSnooze
-                                                ? `You missed your scheduled dose of ${dose.medicationName} (${dose.time}). Please take it and mark it as taken.`
-                                                : `It is time to take your ${dose.medicationName} (${dose.time}).`
+                                            title: isSnooze ? `Snooze: ${dose.medicationName}` : `Reminder: ${dose.medicationName}`
                                         // End of notification content details
                                         }
                                     // End of message object structure
