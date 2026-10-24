@@ -34,8 +34,14 @@ exports.sendMedicationReminders = onSchedule("* * * * *", async () => {
         usersSnapshot.forEach((userDoc) => {
             // Retrieve the data payload of the user document
             const userData = userDoc.data();
-            // Check if the user document does not contain an FCM registration token
-            if (!userData.fcmToken) {
+            // Retrieve list of registered device tokens supporting both array and single token
+            const tokens = Array.isArray(userData.fcmTokens) && userData.fcmTokens.length > 0
+                // Use the registered tokens array if populated
+                ? userData.fcmTokens
+                // Fall back to legacy single token string wrapped in array if available
+                : (userData.fcmToken ? [userData.fcmToken] : []);
+            // Check if there are no registered FCM tokens for the user
+            if (tokens.length === 0) {
                 // Skip this user and continue to the next one
                 return;
                 // End of token check conditional
@@ -218,32 +224,36 @@ exports.sendMedicationReminders = onSchedule("* * * * *", async () => {
                             if (shouldNotify) {
                                 // Determine if this is a snooze notification or first alert
                                 const isSnooze = diff > 0;
-                                // Build push notification FCM message structure
-                                const message = {
-                                    // Device registration token reference
-                                    token: userData.fcmToken,
-                                    // Define notification alert content properties
-                                    notification: {
-                                        // Set header alert title based on snooze status
-                                        title: isSnooze ? `Snooze: ${dose.medicationName}` : `Reminder: ${dose.medicationName}`,
-                                        // Set detail alert body message with instructions
-                                        body: isSnooze
-                                            ? `You missed your scheduled dose of ${dose.medicationName} (${dose.time}). Please take it and mark it as taken.`
-                                            : `It is time to take your ${dose.medicationName} (${dose.time}).`
-                                    // End of notification content details
-                                    }
-                                // End of message object structure
-                                };
-                                // Queue the FCM push notification delivery promise
-                                notificationPromises.push(
-                                    // Send FCM push notification payload to user device
-                                    messaging.send(message)
-                                        // Log successful FCM message delivery response
-                                        .then((response) => console.log("Sent notification successfully:", response))
-                                        // Output FCM delivery failure reason to server logs
-                                        .catch((err) => console.error("Error sending push notification:", err))
-                                // End of queued promise push
-                                );
+                                // Iterate through each registered device token for this user
+                                tokens.forEach((deviceToken) => {
+                                    // Build push notification FCM message structure
+                                    const message = {
+                                        // Device registration token reference
+                                        token: deviceToken,
+                                        // Define notification alert content properties
+                                        notification: {
+                                            // Set header alert title based on snooze status
+                                            title: isSnooze ? `Snooze: ${dose.medicationName}` : `Reminder: ${dose.medicationName}`,
+                                            // Set detail alert body message with instructions
+                                            body: isSnooze
+                                                ? `You missed your scheduled dose of ${dose.medicationName} (${dose.time}). Please take it and mark it as taken.`
+                                                : `It is time to take your ${dose.medicationName} (${dose.time}).`
+                                        // End of notification content details
+                                        }
+                                    // End of message object structure
+                                    };
+                                    // Queue the FCM push notification delivery promise
+                                    notificationPromises.push(
+                                        // Send FCM push notification payload to user device
+                                        messaging.send(message)
+                                            // Log successful FCM message delivery response
+                                            .then((response) => console.log("Sent notification successfully:", response))
+                                            // Output FCM delivery failure reason to server logs
+                                            .catch((err) => console.error("Error sending push notification:", err))
+                                    // End of queued promise push
+                                    );
+                                // End of device tokens loop
+                                });
                             // End of shouldNotify check conditional
                             }
                         // End of diff >= 0 check conditional

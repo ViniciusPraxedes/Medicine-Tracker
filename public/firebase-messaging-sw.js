@@ -32,12 +32,18 @@ if (params.get("apiKey") && params.get("projectId")) {
     const messaging = firebase.messaging();
     // Register the background message handler callback
     messaging.onBackgroundMessage((payload) => {
-        // Extract notification title with fallback text
-        const notificationTitle = payload?.notification?.title || "Medication Reminder";
+        // Check if message payload already contains notification object handled by FCM SDK
+        if (payload && payload.notification) {
+            // Skip manual display to prevent duplicate notification
+            return;
+        // End payload notification check conditional
+        }
+        // Extract notification title from payload data with fallback text
+        const notificationTitle = payload?.data?.title || "Medication Reminder";
         // Define notification presentation options
         const notificationOptions = {
-            // Set notification body text
-            body: payload?.notification?.body || "You have a scheduled medication reminder.",
+            // Set notification body text from data payload with fallback text
+            body: payload?.data?.body || "You have a scheduled medication reminder.",
             // Set notification display icon
             icon: "/favicon.png",
             // Set notification badge icon

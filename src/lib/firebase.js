@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+// Import Firestore database client, document reference, mutation, and arrayUnion helpers
+import { getFirestore, doc, setDoc, arrayUnion } from "firebase/firestore";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 
 // Declare the Firebase configuration object using dynamic environment parameters
@@ -112,8 +113,8 @@ export const requestNotificationPermission = async (userId) => {
                 const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
                 // Create a reference to the specific user's Firestore document
                 const userRef = doc(db, 'users', userId);
-                // Save the retrieved FCM token and timezone string in the user document
-                await setDoc(userRef, { fcmToken: token, timezone: timezone }, { merge: true });
+                // Save the retrieved FCM token, tokens array, and timezone string in the user document
+                await setDoc(userRef, { fcmToken: token, fcmTokens: arrayUnion(token), timezone: timezone }, { merge: true });
                 // Log the successful execution to the developers browser console
                 console.log("FCM Token saved successfully.");
                 // Return the token to the calling function
