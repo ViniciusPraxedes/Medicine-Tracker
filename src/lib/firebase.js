@@ -93,8 +93,8 @@ export const requestNotificationPermission = async (userId) => {
                 }).toString();
                 // Register service worker with dynamic configuration query parameters
                 registration = await navigator.serviceWorker.register(`/firebase-messaging-sw.js?${swParams}`);
-                // Await service worker readiness state
-                await navigator.serviceWorker.ready;
+                // Await service worker readiness state and assign active registration
+                registration = await navigator.serviceWorker.ready;
             // Close serviceWorker support check
             }
             // Construct token retrieval options object

@@ -23,12 +23,42 @@ const AuthWrapper = () => {
 
   // Effect to automatically synchronize FCM token when notification permission is already granted
   useEffect(() => {
-    // Verify user exists and notification API is available with granted permission
-    if (user && typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-      // Synchronize FCM registration token and timezone to Firestore
-      requestNotificationPermission(user.uid);
-    // End conditional check
-    }
+    // Check if user is absent
+    if (!user) return;
+    // Helper function to synchronize current device token with Firestore
+    const syncToken = () => {
+      // Verify notification API availability and permission status
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        // Request and store active token into fcmTokens array
+        requestNotificationPermission(user.uid);
+      // End notification check
+      }
+    // End syncToken definition
+    };
+    // Trigger initial token sync
+    syncToken();
+    // Handler for tab visibility changes
+    const handleVisibilityChange = () => {
+      // Check if document became visible
+      if (document.visibilityState === 'visible') {
+        // Re-sync current device token
+        syncToken();
+      // End visibility check
+      }
+    // End handleVisibilityChange definition
+    };
+    // Listen for tab visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Listen for window focus events
+    window.addEventListener('focus', syncToken);
+    // Cleanup event listeners on effect teardown
+    return () => {
+      // Remove visibility change listener
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      // Remove window focus listener
+      window.removeEventListener('focus', syncToken);
+    // End cleanup callback
+    };
   // Track user state updates
   }, [user]);
 
