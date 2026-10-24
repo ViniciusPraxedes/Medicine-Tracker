@@ -24,6 +24,10 @@ const AddEditMedicationDialog = ({ isOpen, onClose, medicationToEdit }) => {
         name: '',
         dosage: '',
         totalPills: '',
+        // Default count of pills already taken
+        pillsTaken: '0',
+        // Default remaining pills count
+        currentPills: 0,
         frequency: 'daily',
         relationToFood: 'with_food',
         // Enable medication push reminders by default
@@ -43,9 +47,20 @@ const AddEditMedicationDialog = ({ isOpen, onClose, medicationToEdit }) => {
         // Update the tracked previous medication state
         setPrevMedication(medicationToEdit);
         // Reset the form values to match the medication being edited, or default state
+        // Parse numerical total pills count from medication to edit safely
+        const totalCount = medicationToEdit ? (parseInt(medicationToEdit.totalPills) || 0) : 0;
+        // Determine existing current pills count from medication to edit safely
+        const currentCount = medicationToEdit ? (medicationToEdit.currentPills !== undefined ? parseInt(medicationToEdit.currentPills) : totalCount) : 0;
+        // Compute pills already taken based on pack size and remaining pills safely
+        const initialTaken = Math.max(0, totalCount - currentCount);
+        // Reset the form values to match the medication being edited, or default state
         setFormData(medicationToEdit ? {
             // Copy all properties from the medication being edited
             ...medicationToEdit,
+            // Track pills already taken count string
+            pillsTaken: String(initialTaken),
+            // Track current pills remaining integer count
+            currentPills: currentCount,
             // Ensure remindersEnabled is defaulted to true if not explicitly false
             remindersEnabled: medicationToEdit.remindersEnabled !== false,
             // Set snooze interval from edit medication or default to 10 minutes
@@ -58,6 +73,10 @@ const AddEditMedicationDialog = ({ isOpen, onClose, medicationToEdit }) => {
             dosage: '',
             // Preset total pills field value
             totalPills: '',
+            // Preset pills already taken count
+            pillsTaken: '0',
+            // Preset current pills count
+            currentPills: 0,
             // Preset frequency type selection
             frequency: 'daily',
             // Preset food relationship setting
@@ -83,19 +102,47 @@ const AddEditMedicationDialog = ({ isOpen, onClose, medicationToEdit }) => {
 
     if (!isOpen) return null;
 
+    // Handle form submission event across wizard steps
     const handleSubmit = (e) => {
+        // Prevent default browser form submission event
         e.preventDefault();
+        // Check if current wizard view is step 1
         if (step === 1) {
+            // Advance to schedule configuration step 2
             setStep(2);
+            // Exit submit handler early
             return;
+        // End step 1 check
         }
-
+        // Parse numerical total pack pills
+        const total = parseInt(formData.totalPills) || 0;
+        // Parse numerical pills already taken
+        const taken = Math.max(0, parseInt(formData.pillsTaken) || 0);
+        // Calculate dynamic remaining pill count
+        const calculatedCurrent = Math.max(0, total - taken);
+        // Build submission payload with updated pill counts
+        const submissionData = {
+            // Spread current form values
+            ...formData,
+            // Store total pills as string
+            totalPills: String(total),
+            // Store remaining pill count as integer
+            currentPills: calculatedCurrent
+        // End of submissionData payload object
+        };
+        // Check if editing existing medication
         if (medicationToEdit) {
-            updateMedication(medicationToEdit.id, formData);
+            // Update existing medication in store
+            updateMedication(medicationToEdit.id, submissionData);
+        // If adding new medication
         } else {
-            addMedication(formData);
+            // Add new medication to store
+            addMedication(submissionData);
+        // End medication update check
         }
+        // Close modal dialog
         onClose();
+    // End handleSubmit definition
     };
 
     const toggleDay = (dayId) => {
@@ -181,6 +228,37 @@ const AddEditMedicationDialog = ({ isOpen, onClose, medicationToEdit }) => {
                                         placeholder="e.g. 30"
                                     />
                                 </div>
+                            </div>
+                            {/* Two-column layout grid for pills already taken and remaining preview */}
+                            <div className="grid grid-cols-2 gap-4">
+                                {/* Pills already taken input container */}
+                                <div className="grid gap-2">
+                                    {/* Label for pills already taken */}
+                                    <Label htmlFor="pillsTaken">Pills Already Taken</Label>
+                                    {/* Numerical input to adjust pills already taken */}
+                                    <Input
+                                        id="pillsTaken"
+                                        type="number"
+                                        min="0"
+                                        value={formData.pillsTaken !== undefined ? formData.pillsTaken : ''}
+                                        onChange={(e) => setFormData({ ...formData, pillsTaken: e.target.value })}
+                                        placeholder="0"
+                                    />
+                                {/* End pills already taken container */}
+                                </div>
+                                {/* Remaining pills preview container */}
+                                <div className="grid gap-2">
+                                    {/* Label for remaining pills */}
+                                    <Label>Pills Remaining</Label>
+                                    {/* Read-only pill counter display */}
+                                    <div className="flex h-10 w-full items-center rounded-md border border-input bg-muted/40 px-3 py-2 text-sm font-medium text-foreground">
+                                        {/* Display computed remaining pills count */}
+                                        {Math.max(0, (parseInt(formData.totalPills) || 0) - (parseInt(formData.pillsTaken) || 0))} pills left
+                                    {/* End remaining pills preview display */}
+                                    </div>
+                                {/* End remaining pills container */}
+                                </div>
+                            {/* End pills taken and remaining grid */}
                             </div>
                             <div className="grid gap-2">
                                 <Label>Relation to Food</Label>

@@ -371,7 +371,8 @@ export const StoreProvider = ({ children }) => {
 
     // Actions
     const addMedication = async (med) => {
-        const newMed = { ...med, id: crypto.randomUUID(), currentPills: parseInt(med.totalPills) };
+        // Build new medication object while preserving specified remaining pills or defaulting to total pills
+        const newMed = { ...med, id: crypto.randomUUID(), currentPills: med.currentPills !== undefined ? parseInt(med.currentPills) : parseInt(med.totalPills) };
 
         // Check if the user is signed in and is not a local mock user
         if (user && !user.isMock) {

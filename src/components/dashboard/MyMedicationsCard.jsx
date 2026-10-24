@@ -87,10 +87,18 @@ const MyMedicationsCard = () => {
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2">
+                                    {/* Action button to reset or refill the medication to full capacity */}
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => refillMedication(med.id)}
+                                        onClick={() => {
+                                            // Prompt confirmation dialog before resetting pill count
+                                            if (window.confirm(`Are you sure you want to reset ${med.name} back to full pack size (${med.totalPills} pills)?`)) {
+                                                // Execute refill to reset pill inventory
+                                                refillMedication(med.id);
+                                            // End confirmation block
+                                            }
+                                        }}
                                         className="gap-1 text-green-600 hover:text-green-700 hover:bg-green-50"
                                     >
                                         <RefreshCw className="h-3 w-3" /> Reset
