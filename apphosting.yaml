@@ -40,4 +40,14 @@ env:
     availability:
       - BUILD
       - RUNTIME
+  # Define the Firebase Cloud Messaging VAPID public key variable
+  - variable: VITE_FIREBASE_VAPID_KEY
+    # Retrieve value from Cloud Secret Manager
+    secret: VITE_FIREBASE_VAPID_KEY
+    # Specify secret availability phases
+    availability:
+      # Enable secret at build time for Vite
+      - BUILD
+      # Enable secret at runtime for server execution
+      - RUNTIME
 

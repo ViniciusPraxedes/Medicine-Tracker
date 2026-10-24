@@ -13,12 +13,28 @@ function App() {
 
 import { useStore } from './context/StoreContext';
 import Login from './components/Login';
-import { listenForMessages } from './lib/firebase';
+// Import FCM message listener and token registration helper functions
+import { listenForMessages, requestNotificationPermission } from './lib/firebase';
 
+// Define authentication wrapper component
 const AuthWrapper = () => {
+  // Extract user state and loading indicator from store context
   const { user, loading } = useStore();
 
+  // Effect to automatically synchronize FCM token when notification permission is already granted
   useEffect(() => {
+    // Verify user exists and notification API is available with granted permission
+    if (user && typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      // Synchronize FCM registration token and timezone to Firestore
+      requestNotificationPermission(user.uid);
+    // End conditional check
+    }
+  // Track user state updates
+  }, [user]);
+
+  // Effect to handle incoming foreground push notifications
+  useEffect(() => {
+    // Check if user is authenticated
     if (user) {
       const unsubscribe = listenForMessages((payload) => {
         console.log('Message received in foreground: ', payload);
